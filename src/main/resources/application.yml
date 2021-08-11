@@ -1,0 +1,17 @@
+micronaut:
+  application:
+    name: pixKeymanagerGrpc
+
+datasources:
+  default:
+    url: ${DB_URL:`jdbc:postgresql://localhost:5432/pix-keymanager-grpc`}
+    driverClassName: org.postgresql.Driver
+    username: ${DB_USERNAME:postgres}
+    password: ${DB_PASSWORD:password}
+
+jpa:
+  default:
+    properties:
+      hibernate:
+        hbm2ddl:
+          auto: update
