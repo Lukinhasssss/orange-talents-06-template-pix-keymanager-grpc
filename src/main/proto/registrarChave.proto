@@ -1,0 +1,35 @@
+syntax = "proto3";
+
+option java_multiple_files = true;
+option java_package = "br.com.lukinhasssss";
+option java_outer_classname = "RegistrarChave";
+
+package br.com.lukinhasssss;
+
+service RegistrarChaveService {
+  rpc registrarChave (RegistrarChaveRequest) returns (RegistrarChaveResponse) {}
+}
+
+enum TipoChave {
+   CHAVE_ALEATORIA = 0;
+   CELULAR = 1;
+   CPF = 2;
+   EMAIL = 3;
+}
+
+enum TipoConta {
+  CONTA_INVALIDA = 0;
+  CONTA_CORRENTE = 1;
+  CONTA_POUPANCA = 2;
+}
+
+message RegistrarChaveRequest {
+  string idCliente = 1;
+  TipoChave tipoChave = 2;
+  string valorChave = 3;
+  TipoConta tipoConta = 4;
+}
+
+message RegistrarChaveResponse {
+  string pixId = 1;
+}
