@@ -4,32 +4,19 @@ import br.com.lukinhasssss.RegistrarChaveRequest
 import br.com.lukinhasssss.RegistrarChaveResponse
 import br.com.lukinhasssss.TipoChave
 import br.com.lukinhasssss.TipoConta
+import br.com.lukinhasssss.entities.ChavePix
 import br.com.lukinhasssss.repositories.ChavePixRepository
 import io.grpc.Status
 import io.grpc.stub.StreamObserver
+import sun.jvm.hotspot.oops.CellTypeState.value
 import java.util.*
 
-fun String.isEmailValid(): Boolean {
-    return this.matches("[a-zA-Z0-9+._%-+]{1,256}@[a-zA-Z0-9][a-zA-Z0-9\\-]{0,64}(\\.[a-zA-Z0-9][a-zA-Z0-9\\-]{0,25})+".toRegex())
-}
-
-fun String.isCelularValid(): Boolean {
-    return this.matches("^\\+[1-9][0-9]\\d{1,14}\$".toRegex())
-}
-
-fun String.isCpfValid(): Boolean {
-    return this.matches("^[0-9]{11}\$".toRegex())
-}
-
-fun String.isUUID(): Boolean {
-    return try {
-        UUID.fromString(this)
-        true
-    } catch (ex: Exception) {
-        false
-    }
-    // Outra forma de validar se é um UUID válido -> this.matches("([a-f0-9]{8}(-[a-f0-9]{4}){4}[a-f0-9]{8})".toRegex())
-}
+fun RegistrarChaveRequest.converterParaChavePix(): ChavePix = ChavePix(
+    idCliente = UUID.fromString(this.idCliente),
+    tipoChave = this.tipoChave,
+    valorChave = this.valorChave.ifBlank { UUID.randomUUID().toString() },
+    tipoConta = this.tipoConta
+)
 
 fun RegistrarChaveRequest.isValid(
     pixRepository: ChavePixRepository,
@@ -98,4 +85,26 @@ fun RegistrarChaveRequest.isValid(
         }
     }
     return true
+}
+
+fun String.isEmailValid(): Boolean {
+    return this.matches("[a-zA-Z0-9+._%-+]{1,256}@[a-zA-Z0-9][a-zA-Z0-9\\-]{0,64}(\\.[a-zA-Z0-9][a-zA-Z0-9\\-]{0,25})+".toRegex())
+}
+
+fun String.isCelularValid(): Boolean {
+    return this.matches("^\\+[1-9][0-9]\\d{1,14}\$".toRegex())
+}
+
+fun String.isCpfValid(): Boolean {
+    return this.matches("^[0-9]{11}\$".toRegex())
+}
+
+fun String.isUUID(): Boolean {
+    return try {
+        UUID.fromString(this)
+        true
+    } catch (ex: Exception) {
+        false
+    }
+    // Outra forma de validar se é um UUID válido -> this.matches("([a-f0-9]{8}(-[a-f0-9]{4}){4}[a-f0-9]{8})".toRegex())
 }

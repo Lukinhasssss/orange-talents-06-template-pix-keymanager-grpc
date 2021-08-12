@@ -6,6 +6,7 @@ import br.com.lukinhasssss.RegistrarChaveServiceGrpc
 import br.com.lukinhasssss.clients.ItauClient
 import br.com.lukinhasssss.entities.ChavePix
 import br.com.lukinhasssss.repositories.ChavePixRepository
+import br.com.lukinhasssss.validations.converterParaChavePix
 import br.com.lukinhasssss.validations.isValid
 import io.grpc.Status
 import io.grpc.stub.StreamObserver
@@ -33,17 +34,11 @@ class RegistrarChaveController(
                         throw HttpClientResponseException("Não foi possível encontrar o cliente com o id informado!", response)
                 }
 
-                pixRepository.save(ChavePix(
-                    idCliente = UUID.fromString(request.idCliente),
-                    tipoChave = request.tipoChave,
-                    valorChave = request.valorChave.ifBlank { UUID.randomUUID().toString() },
-                    tipoConta = request.tipoConta
-                )).let { chavePix ->
+                pixRepository.save(request.converterParaChavePix()).let { chavePix ->
                     responseObserver?.onNext(RegistrarChaveResponse.newBuilder().setPixId(chavePix.pixId).build())
                     responseObserver?.onCompleted()
                 }
             } catch (e: HttpClientResponseException) {
-                logger.info("Ocorreu um erro ao fazer a requisição no client externo: {}", e.status.code)
                 if (e.status.code == 404)
                     responseObserver?.onError(Status.NOT_FOUND
                         .withDescription(e.localizedMessage)
