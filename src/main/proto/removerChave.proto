@@ -1,0 +1,18 @@
+syntax = "proto3";
+
+option java_multiple_files = true;
+option java_package = "br.com.lukinhasssss";
+option java_outer_classname = "RemoverChave";
+
+package br.com.lukinhasssss;
+
+service RemoverChaveService {
+  rpc removerChave (RemoverChaveRequest) returns (RemoverChaveResponse) {}
+}
+
+message RemoverChaveRequest {
+  string pixId = 1;
+  string idCliente = 2;
+}
+
+message RemoverChaveResponse {}

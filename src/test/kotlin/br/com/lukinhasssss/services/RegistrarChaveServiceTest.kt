@@ -1,4 +1,4 @@
-package br.com.lukinhasssss.controllers
+package br.com.lukinhasssss.services
 
 import br.com.lukinhasssss.RegistrarChaveRequest
 import br.com.lukinhasssss.RegistrarChaveServiceGrpc
@@ -21,12 +21,11 @@ import org.junit.jupiter.api.BeforeEach
 import org.junit.jupiter.api.Test
 import org.junit.jupiter.api.assertThrows
 import org.mockito.Mockito
-import java.util.*
 import javax.inject.Inject
 import javax.inject.Singleton
 
 @MicronautTest(transactional = false)
-internal class RegistrarChaveControllerTest(
+internal class RegistrarChaveServiceTest(
     private val grpcClient: RegistrarChaveServiceGrpc.RegistrarChaveServiceBlockingStub,
     private val pixRepository: ChavePixRepository
 ){
@@ -125,7 +124,7 @@ internal class RegistrarChaveControllerTest(
     @Test
     internal fun `deve retornar ALREADY_EXISTS quando a chave ja existir`() {
         pixRepository.save(ChavePix(
-            idCliente = UUID.fromString("c56dfef4-7901-44fb-84e2-a2cefb157890"),
+            idCliente = "c56dfef4-7901-44fb-84e2-a2cefb157890",
             tipoChave = TipoChave.CPF,
             valorChave = "12345678901",
             tipoConta = TipoConta.CONTA_CORRENTE

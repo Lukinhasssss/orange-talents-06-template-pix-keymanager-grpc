@@ -15,7 +15,7 @@ data class ChavePix(
     val pixId: String? = null,
 
     @Column(nullable = false, length = 36)
-    val idCliente: UUID,
+    val idCliente: String,
 
     @Enumerated(EnumType.STRING)
     @Column(nullable = false)

@@ -10,4 +10,8 @@ interface ChavePixRepository : JpaRepository<ChavePix, String> {
 
     fun existsByTipoChaveAndValorChave(tipoChave: TipoChave, valorChave: String): Boolean
 
+    fun existsByPixIdAndIdCliente(pixId: String, idCliente: String): Boolean
+
+    fun existsByPixId(pixId: String): Boolean
+
 }

@@ -11,7 +11,7 @@ import io.grpc.stub.StreamObserver
 import java.util.*
 
 fun RegistrarChaveRequest.converterParaChavePix(): ChavePix = ChavePix(
-    idCliente = UUID.fromString(this.idCliente),
+    idCliente = this.idCliente,
     tipoChave = this.tipoChave,
     valorChave = this.valorChave.ifBlank { UUID.randomUUID().toString() },
     tipoConta = this.tipoConta

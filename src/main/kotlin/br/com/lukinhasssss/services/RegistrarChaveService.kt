@@ -1,4 +1,4 @@
-package br.com.lukinhasssss.controllers
+package br.com.lukinhasssss.services
 
 import br.com.lukinhasssss.RegistrarChaveRequest
 import br.com.lukinhasssss.RegistrarChaveResponse
@@ -14,12 +14,12 @@ import org.slf4j.LoggerFactory
 import javax.inject.Singleton
 
 @Singleton
-class RegistrarChaveController(
+class RegistrarChaveService(
     private val pixRepository: ChavePixRepository,
     private val itauClient: ItauClient
 ) : RegistrarChaveServiceGrpc.RegistrarChaveServiceImplBase() {
 
-    private val logger = LoggerFactory.getLogger(RegistrarChaveController::class.java)
+    private val logger = LoggerFactory.getLogger(RegistrarChaveService::class.java)
 
     override fun registrarChave(
         request: RegistrarChaveRequest?,
