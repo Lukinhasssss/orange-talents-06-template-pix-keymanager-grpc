@@ -1,8 +1,8 @@
 package br.com.lukinhasssss.services
 
+import br.com.lukinhasssss.RegistrarChaveServiceGrpc
 import br.com.lukinhasssss.RegistrarChaveRequest
 import br.com.lukinhasssss.RegistrarChaveResponse
-import br.com.lukinhasssss.RegistrarChaveServiceGrpc
 import br.com.lukinhasssss.clients.ItauClient
 import br.com.lukinhasssss.repositories.ChavePixRepository
 import br.com.lukinhasssss.validations.converterParaChavePix

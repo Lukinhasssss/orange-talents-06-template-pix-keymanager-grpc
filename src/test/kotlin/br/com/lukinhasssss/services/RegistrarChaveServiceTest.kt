@@ -1,9 +1,6 @@
 package br.com.lukinhasssss.services
 
-import br.com.lukinhasssss.RegistrarChaveRequest
-import br.com.lukinhasssss.RegistrarChaveServiceGrpc
-import br.com.lukinhasssss.TipoChave
-import br.com.lukinhasssss.TipoConta
+import br.com.lukinhasssss.*
 import br.com.lukinhasssss.clients.ItauClient
 import br.com.lukinhasssss.entities.ChavePix
 import br.com.lukinhasssss.repositories.ChavePixRepository
@@ -25,10 +22,12 @@ import javax.inject.Inject
 import javax.inject.Singleton
 
 @MicronautTest(transactional = false)
-internal class RegistrarChaveServiceTest(
-    private val grpcClient: RegistrarChaveServiceGrpc.RegistrarChaveServiceBlockingStub,
-    private val pixRepository: ChavePixRepository
-){
+internal class RegistrarChaveServiceTest {
+
+    @Inject
+    lateinit var pixRepository: ChavePixRepository
+    @Inject
+    lateinit var grpcClient: RegistrarChaveServiceGrpc.RegistrarChaveServiceBlockingStub
 
     @field:Inject
     lateinit var itauClient: ItauClient
@@ -318,7 +317,7 @@ internal class RegistrarChaveServiceTest(
     }
 
     @Factory
-    class Clients {
+    class Registra {
         @Singleton
         fun blockingStub(@GrpcChannel(GrpcServerChannel.NAME) channel: ManagedChannel): RegistrarChaveServiceGrpc.RegistrarChaveServiceBlockingStub {
             return RegistrarChaveServiceGrpc.newBlockingStub(channel)
