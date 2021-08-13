@@ -4,7 +4,6 @@ import br.com.lukinhasssss.RegistrarChaveRequest
 import br.com.lukinhasssss.RegistrarChaveResponse
 import br.com.lukinhasssss.RegistrarChaveServiceGrpc
 import br.com.lukinhasssss.clients.ItauClient
-import br.com.lukinhasssss.entities.ChavePix
 import br.com.lukinhasssss.repositories.ChavePixRepository
 import br.com.lukinhasssss.validations.converterParaChavePix
 import br.com.lukinhasssss.validations.isValid
@@ -12,7 +11,6 @@ import io.grpc.Status
 import io.grpc.stub.StreamObserver
 import io.micronaut.http.client.exceptions.HttpClientResponseException
 import org.slf4j.LoggerFactory
-import java.util.*
 import javax.inject.Singleton
 
 @Singleton
@@ -23,30 +21,33 @@ class RegistrarChaveController(
 
     private val logger = LoggerFactory.getLogger(RegistrarChaveController::class.java)
 
-    override fun registrarChave(request: RegistrarChaveRequest?,
+    override fun registrarChave(
+        request: RegistrarChaveRequest?,
         responseObserver: StreamObserver<RegistrarChaveResponse>?
     ) {
 
         if (request!!.isValid(pixRepository, responseObserver)) {
             try {
                 itauClient.buscarContaPorTipo(request.idCliente, request.tipoConta.name).let { response ->
-                    if (response.status.code == 404)
-                        throw HttpClientResponseException("Não foi possível encontrar o cliente com o id informado!", response)
-                }
+                    if (response.status.code == 404 || response.status.code == 500)
+                        throw HttpClientResponseException("", response)
 
-                pixRepository.save(request.converterParaChavePix()).let { chavePix ->
-                    responseObserver?.onNext(RegistrarChaveResponse.newBuilder().setPixId(chavePix.pixId).build())
-                    responseObserver?.onCompleted()
+                    pixRepository.save(request.converterParaChavePix()).let { chavePix ->
+                        responseObserver?.onNext(RegistrarChaveResponse.newBuilder().setPixId(chavePix.pixId).build())
+                        responseObserver?.onCompleted()
+                    }
                 }
             } catch (e: HttpClientResponseException) {
                 if (e.status.code == 404)
                     responseObserver?.onError(Status.NOT_FOUND
-                        .withDescription(e.localizedMessage)
+                        .withDescription("Não foi possível encontrar o cliente com o id informado!")
                         .asRuntimeException())
+
                 if (e.status.code == 500)
-                responseObserver?.onError(Status.INTERNAL
-                    .withDescription("Não foi possível fazer a requisição para o cliente externo!")
-                    .asRuntimeException())
+                    responseObserver?.onError(Status.INTERNAL
+                        .withDescription("Não foi possível fazer a requisição para o cliente externo!")
+                        .asRuntimeException())
+
                 responseObserver?.onCompleted()
             }
         }

@@ -1,4 +1,11 @@
+micronaut:
+  application:
+    name: pixKeymanagerGrpc
+
 datasources:
   default:
-    url: jdbc:tc:postgresql:12:///postgres
-    driverClassName: org.testcontainers.jdbc.ContainerDatabaseDriver
+    url: jdbc:h2:mem:test-db;MVCC=TRUE;MODE=PostgreSQL;DATABASE_TO_LOWER=TRUE;LOCK_TIMEOUT=10000;DB_CLOSE_ON_EXIT=FALSE
+    driverClassName: org.h2.Driver
+logger:
+  levels:
+    io.micronaut.transaction: DEBUG

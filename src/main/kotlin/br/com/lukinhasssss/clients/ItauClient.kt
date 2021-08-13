@@ -18,11 +18,9 @@ interface ItauClient {
 }
 
 data class DadosDaContaResponse(
-
     val tipo: String,
     val instituicao: Map<String, String>,
     val agencia: String,
     val numero: String,
     val titular: Map<String, String>
-
 )

@@ -8,7 +8,6 @@ import br.com.lukinhasssss.entities.ChavePix
 import br.com.lukinhasssss.repositories.ChavePixRepository
 import io.grpc.Status
 import io.grpc.stub.StreamObserver
-import sun.jvm.hotspot.oops.CellTypeState.value
 import java.util.*
 
 fun RegistrarChaveRequest.converterParaChavePix(): ChavePix = ChavePix(
@@ -23,7 +22,7 @@ fun RegistrarChaveRequest.isValid(
     responseObserver: StreamObserver<RegistrarChaveResponse>?
 ): Boolean {
     with(this) {
-        if (pixRepository.existsByValorChave(valorChave)) {
+        if (pixRepository.existsByTipoChaveAndValorChave(tipoChave, valorChave)) {
             responseObserver?.onError(Status.ALREADY_EXISTS.withDescription("Chave já cadastrada!").asRuntimeException())
             return false
         }
@@ -33,18 +32,13 @@ fun RegistrarChaveRequest.isValid(
             return false
         }
 
-        if (tipoConta == null) {
-            responseObserver?.onError(Status.INVALID_ARGUMENT.withDescription("Tipo de conta é obrigatório!").asRuntimeException())
-            return false
-        }
-
         if (tipoConta == TipoConta.CONTA_INVALIDA) {
             responseObserver?.onError(Status.INVALID_ARGUMENT.withDescription("Tipo de conta é inválido!").asRuntimeException())
             return false
         }
 
         if (idCliente.isBlank() || !idCliente.isUUID()) {
-            responseObserver?.onError(Status.INVALID_ARGUMENT.withDescription("Id do cliente é obrigatório!").asRuntimeException())
+            responseObserver?.onError(Status.INVALID_ARGUMENT.withDescription("Id do cliente deve ser um UUID válido!").asRuntimeException())
             return false
         }
 
@@ -100,11 +94,12 @@ fun String.isCpfValid(): Boolean {
 }
 
 fun String.isUUID(): Boolean {
-    return try {
-        UUID.fromString(this)
-        true
-    } catch (ex: Exception) {
-        false
-    }
-    // Outra forma de validar se é um UUID válido -> this.matches("([a-f0-9]{8}(-[a-f0-9]{4}){4}[a-f0-9]{8})".toRegex())
+    return this.matches("([a-f0-9]{8}(-[a-f0-9]{4}){4}[a-f0-9]{8})".toRegex())
+
+//    return try {
+//        UUID.fromString(this)
+//        true
+//    } catch (ex: Exception) {
+//        false
+//    }
 }
