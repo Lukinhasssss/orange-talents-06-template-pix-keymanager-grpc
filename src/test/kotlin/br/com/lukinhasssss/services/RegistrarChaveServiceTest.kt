@@ -5,6 +5,7 @@ import br.com.lukinhasssss.clients.ItauClient
 import br.com.lukinhasssss.entities.ChavePix
 import br.com.lukinhasssss.repositories.ChavePixRepository
 import io.grpc.ManagedChannel
+import io.grpc.Status
 import io.grpc.StatusRuntimeException
 import io.micronaut.context.annotation.Factory
 import io.micronaut.grpc.annotation.GrpcChannel
@@ -76,6 +77,63 @@ internal class RegistrarChaveServiceTest {
     }
 
     @Test
+    internal fun `deve registrar uma nova chave pix quando a chave for CELULAR e o valor for valido`() {
+        val request = RegistrarChaveRequest.newBuilder()
+            .setIdCliente("a61e53c7-c99f-4d85-9974-6be73681b5a9")
+            .setTipoChave(TipoChave.CELULAR)
+            .setValorChave("+5511987654321")
+            .setTipoConta(TipoConta.CONTA_CORRENTE)
+            .build()
+
+        Mockito.`when`(itauClient.buscarContaPorTipo(request.idCliente, request.tipoConta.name)).thenReturn(HttpResponse.ok())
+
+        val response = grpcClient.registrarChave(request)
+
+        with(response) {
+            assertNotNull(pixId)
+            assertTrue(pixRepository.findById(pixId).isPresent)
+        }
+    }
+
+    @Test
+    internal fun `deve registrar uma nova chave pix quando a chave for CPF e o valor for valido`() {
+        val request = RegistrarChaveRequest.newBuilder()
+            .setIdCliente("a61e53c7-c99f-4d85-9974-6be73681b5a9")
+            .setTipoChave(TipoChave.CPF)
+            .setValorChave("92678134568")
+            .setTipoConta(TipoConta.CONTA_CORRENTE)
+            .build()
+
+        Mockito.`when`(itauClient.buscarContaPorTipo(request.idCliente, request.tipoConta.name)).thenReturn(HttpResponse.ok())
+
+        val response = grpcClient.registrarChave(request)
+
+        with(response) {
+            assertNotNull(pixId)
+            assertTrue(pixRepository.findById(pixId).isPresent)
+        }
+    }
+
+    @Test
+    internal fun `deve registrar uma nova chave pix quando a chave for EMAIL e o valor for valido`() {
+        val request = RegistrarChaveRequest.newBuilder()
+            .setIdCliente("a61e53c7-c99f-4d85-9974-6be73681b5a9")
+            .setTipoChave(TipoChave.EMAIL)
+            .setValorChave("zoro@gmail.com")
+            .setTipoConta(TipoConta.CONTA_CORRENTE)
+            .build()
+
+        Mockito.`when`(itauClient.buscarContaPorTipo(request.idCliente, request.tipoConta.name)).thenReturn(HttpResponse.ok())
+
+        val response = grpcClient.registrarChave(request)
+
+        with(response) {
+            assertNotNull(pixId)
+            assertTrue(pixRepository.findById(pixId).isPresent)
+        }
+    }
+
+    @Test
     internal fun `deve retornar NOT_FOUND quando o id do cliente nao for encontrado`() {
 
         val request = RegistrarChaveRequest.newBuilder()
@@ -93,7 +151,7 @@ internal class RegistrarChaveServiceTest {
 
         with(exception){
             assertEquals("Não foi possível encontrar o cliente com o id informado!", status.description)
-            assertEquals(5, status.code.value())
+            assertEquals(Status.NOT_FOUND.code, status.code)
             assertTrue(pixRepository.findAll().isEmpty())
         }
     }
@@ -115,7 +173,7 @@ internal class RegistrarChaveServiceTest {
 
         with(exception){
             assertEquals("Não foi possível fazer a requisição para o cliente externo!", status.description)
-            assertEquals(13, status.code.value())
+            assertEquals(Status.INTERNAL.code, status.code)
             assertTrue(pixRepository.findAll().isEmpty())
         }
     }
@@ -143,8 +201,64 @@ internal class RegistrarChaveServiceTest {
 
         with(exception){
             assertEquals("Chave já cadastrada!", status.description)
-            assertEquals(6, status.code.value())
+            assertEquals(Status.ALREADY_EXISTS.code, status.code)
             assertTrue(pixRepository.findAll().size == 1)
+        }
+    }
+
+    @Test
+    internal fun `deve retornar INVALID_ARGUMENT quando o cliente tentar cadastrar mais de cinco chaves`() {
+        pixRepository.save(ChavePix(
+            idCliente = "c56dfef4-7901-44fb-84e2-a2cefb157890",
+            tipoChave = TipoChave.CPF,
+            valorChave = "12345678901",
+            tipoConta = TipoConta.CONTA_CORRENTE
+        ))
+
+        pixRepository.save(ChavePix(
+            idCliente = "c56dfef4-7901-44fb-84e2-a2cefb157890",
+            tipoChave = TipoChave.CELULAR,
+            valorChave = "+5511987654321",
+            tipoConta = TipoConta.CONTA_CORRENTE
+        ))
+
+        pixRepository.save(ChavePix(
+            idCliente = "c56dfef4-7901-44fb-84e2-a2cefb157890",
+            tipoChave = TipoChave.EMAIL,
+            valorChave = "zoro@gmail.com",
+            tipoConta = TipoConta.CONTA_CORRENTE
+        ))
+
+        pixRepository.save(ChavePix(
+            idCliente = "c56dfef4-7901-44fb-84e2-a2cefb157890",
+            tipoChave = TipoChave.CHAVE_ALEATORIA,
+            valorChave = "",
+            tipoConta = TipoConta.CONTA_CORRENTE
+        ))
+
+        pixRepository.save(ChavePix(
+            idCliente = "c56dfef4-7901-44fb-84e2-a2cefb157890",
+            tipoChave = TipoChave.CHAVE_ALEATORIA,
+            valorChave = "",
+            tipoConta = TipoConta.CONTA_CORRENTE
+        ))
+
+        val request = RegistrarChaveRequest
+            .newBuilder()
+            .setIdCliente("c56dfef4-7901-44fb-84e2-a2cefb157890")
+            .setTipoChave(TipoChave.CHAVE_ALEATORIA)
+            .setValorChave("")
+            .setTipoConta(TipoConta.CONTA_CORRENTE)
+            .build()
+
+        val exception = assertThrows<StatusRuntimeException> {
+            grpcClient.registrarChave(request)
+        }
+
+        with(exception){
+            assertEquals("Número máximo de chaves cadastradas!\n" + "Para cadastrar mais chaves remova uma chave existente.", status.description)
+            assertEquals(Status.INVALID_ARGUMENT.code, status.code)
+            assertTrue(pixRepository.findByIdCliente(request.idCliente).size == 5)
         }
     }
 
@@ -164,7 +278,28 @@ internal class RegistrarChaveServiceTest {
 
         with(exception){
             assertEquals("Chave deve ter no máximo 77 caracteres!", status.description)
-            assertEquals(3, status.code.value())
+            assertEquals(Status.INVALID_ARGUMENT.code, status.code)
+            assertTrue(pixRepository.findAll().isEmpty())
+        }
+    }
+
+    @Test
+    internal fun `deve retornar INVALID_ARGUMENT quando o tipo de chave for CHAVE_INVALIDA`() {
+        val request = RegistrarChaveRequest
+            .newBuilder()
+            .setIdCliente("c56dfef4-7901-44fb-84e2-a2cefb157890")
+            .setTipoChave(TipoChave.CHAVE_INVALIDA)
+            .setValorChave("")
+            .setTipoConta(TipoConta.CONTA_CORRENTE)
+            .build()
+
+        val exception = assertThrows<StatusRuntimeException> {
+            grpcClient.registrarChave(request)
+        }
+
+        with(exception){
+            assertEquals("Tipo de chave é inválido!", status.description)
+            assertEquals(Status.INVALID_ARGUMENT.code, status.code)
             assertTrue(pixRepository.findAll().isEmpty())
         }
     }
@@ -185,7 +320,7 @@ internal class RegistrarChaveServiceTest {
 
         with(exception){
             assertEquals("Tipo de conta é inválido!", status.description)
-            assertEquals(3, status.code.value())
+            assertEquals(Status.INVALID_ARGUMENT.code, status.code)
             assertTrue(pixRepository.findAll().isEmpty())
         }
     }
@@ -206,7 +341,7 @@ internal class RegistrarChaveServiceTest {
 
         with(exception){
             assertEquals("Id do cliente deve ser um UUID válido!", status.description)
-            assertEquals(3, status.code.value())
+            assertEquals(Status.INVALID_ARGUMENT.code, status.code)
             assertTrue(pixRepository.findAll().isEmpty())
         }
     }
@@ -227,7 +362,7 @@ internal class RegistrarChaveServiceTest {
 
         with(exception){
             assertEquals("Chave deve ser informada!", status.description)
-            assertEquals(3, status.code.value())
+            assertEquals(Status.INVALID_ARGUMENT.code, status.code)
             assertTrue(pixRepository.findAll().isEmpty())
         }
     }
@@ -248,7 +383,7 @@ internal class RegistrarChaveServiceTest {
 
         with(exception){
             assertEquals("Quando o tipo de chave for aleatória o valor não deve ser preenchido!", status.description)
-            assertEquals(3, status.code.value())
+            assertEquals(Status.INVALID_ARGUMENT.code, status.code)
             assertTrue(pixRepository.findAll().isEmpty())
         }
     }
@@ -269,7 +404,7 @@ internal class RegistrarChaveServiceTest {
 
         with(exception){
             assertEquals("Formato inválido para a chave CELULAR!\n" + "Formato esperado: +5585988714077", status.description)
-            assertEquals(3, status.code.value())
+            assertEquals(Status.INVALID_ARGUMENT.code, status.code)
             assertTrue(pixRepository.findAll().isEmpty())
         }
     }
@@ -290,7 +425,7 @@ internal class RegistrarChaveServiceTest {
 
         with(exception){
             assertEquals("Formato inválido para a chave CPF!\n" + "Formato esperado: 12345678912", status.description)
-            assertEquals(3, status.code.value())
+            assertEquals(Status.INVALID_ARGUMENT.code, status.code)
             assertTrue(pixRepository.findAll().isEmpty())
         }
     }
@@ -311,13 +446,13 @@ internal class RegistrarChaveServiceTest {
 
         with(exception){
             assertEquals("Formato inválido para a chave EMAIL!\n" + "Exemplo de email válido: email_teste@email.com", status.description)
-            assertEquals(3, status.code.value())
+            assertEquals(Status.INVALID_ARGUMENT.code, status.code)
             assertTrue(pixRepository.findAll().isEmpty())
         }
     }
 
     @Factory
-    class Registra {
+    class Registrar {
         @Singleton
         fun blockingStub(@GrpcChannel(GrpcServerChannel.NAME) channel: ManagedChannel): RegistrarChaveServiceGrpc.RegistrarChaveServiceBlockingStub {
             return RegistrarChaveServiceGrpc.newBlockingStub(channel)

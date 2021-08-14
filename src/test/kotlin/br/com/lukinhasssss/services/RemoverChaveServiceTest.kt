@@ -125,7 +125,7 @@ internal class RemoverChaveServiceTest {
     }
 
     @Factory
-    class Remove {
+    class Remover {
         @Singleton
         fun blockingStub(@GrpcChannel(GrpcServerChannel.NAME) channel: ManagedChannel): RemoverChaveServiceGrpc.RemoverChaveServiceBlockingStub {
             return RemoverChaveServiceGrpc.newBlockingStub(channel)

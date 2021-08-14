@@ -70,9 +70,12 @@ tasks {
             jvmTarget = "11"
         }
     }
-
-
 }
+
+test {
+    useJUnitPlatform()
+}
+
 sourceSets {
     main {
         java {

@@ -11,10 +11,11 @@ service RegistrarChaveService {
 }
 
 enum TipoChave {
-  CHAVE_ALEATORIA = 0;
+  CHAVE_INVALIDA = 0;
   CELULAR = 1;
   CPF = 2;
   EMAIL = 3;
+  CHAVE_ALEATORIA = 4;
 }
 
 enum TipoConta {

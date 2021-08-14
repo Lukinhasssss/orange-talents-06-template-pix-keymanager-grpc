@@ -22,6 +22,24 @@ fun RegistrarChaveRequest.isValid(
     responseObserver: StreamObserver<RegistrarChaveResponse>?
 ): Boolean {
     with(this) {
+        if (tipoChave == TipoChave.CHAVE_INVALIDA) {
+            responseObserver?.onError(Status.INVALID_ARGUMENT.withDescription("Tipo de chave é inválido!").asRuntimeException())
+            return false
+        }
+
+        if (tipoConta == TipoConta.CONTA_INVALIDA) {
+            responseObserver?.onError(Status.INVALID_ARGUMENT.withDescription("Tipo de conta é inválido!").asRuntimeException())
+            return false
+        }
+
+        if (pixRepository.findByIdCliente(idCliente).size == 5) {
+            responseObserver?.onError(Status.INVALID_ARGUMENT
+                .withDescription("Número máximo de chaves cadastradas!")
+                .augmentDescription("Para cadastrar mais chaves remova uma chave existente.")
+                .asRuntimeException())
+            return false
+        }
+
         if (pixRepository.existsByTipoChaveAndValorChave(tipoChave, valorChave)) {
             responseObserver?.onError(Status.ALREADY_EXISTS.withDescription("Chave já cadastrada!").asRuntimeException())
             return false
@@ -29,11 +47,6 @@ fun RegistrarChaveRequest.isValid(
 
         if (valorChave.length > 77) {
             responseObserver?.onError(Status.INVALID_ARGUMENT.withDescription("Chave deve ter no máximo 77 caracteres!").asRuntimeException())
-            return false
-        }
-
-        if (tipoConta == TipoConta.CONTA_INVALIDA) {
-            responseObserver?.onError(Status.INVALID_ARGUMENT.withDescription("Tipo de conta é inválido!").asRuntimeException())
             return false
         }
 
