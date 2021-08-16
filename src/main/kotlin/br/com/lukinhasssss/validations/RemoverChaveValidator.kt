@@ -22,7 +22,7 @@ fun RemoverChaveRequest.isValid(
         }
 
         if (!pixRepository.existsByPixId(pixId)) {
-            responseObserver?.onError(Status.NOT_FOUND.withDescription("Chave não encontrada!").asRuntimeException())
+            responseObserver?.onError(Status.NOT_FOUND.withDescription("Chave Pix não encontrada!").asRuntimeException())
             return false
         }
 

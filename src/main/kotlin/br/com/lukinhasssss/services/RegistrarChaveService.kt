@@ -35,10 +35,13 @@ class RegistrarChaveService(
                     if (response.status.code == 404 || response.status.code == 500)
                         throw HttpClientResponseException("", response)
 
-                    bcbClient.registrarChave(CreatePixKeyRequest(response.body()!!, request))
-                    pixRepository.save(request.converterParaChavePix()).let { chavePix ->
-                        responseObserver?.onNext(RegistrarChaveResponse.newBuilder().setPixId(chavePix.pixId).build())
-                        responseObserver?.onCompleted()
+                    bcbClient.registrarChave(CreatePixKeyRequest(response.body()!!, request)).let { bcbResponse ->
+                        if (bcbResponse.status.code != 201)
+                            throw HttpClientResponseException("", bcbResponse)
+                        pixRepository.save(request.converterParaChavePix()).let { chavePix ->
+                            responseObserver?.onNext(RegistrarChaveResponse.newBuilder().setPixId(chavePix.pixId).build())
+                            responseObserver?.onCompleted()
+                        }
                     }
                 }
             } catch (e: HttpClientResponseException) {
@@ -48,8 +51,8 @@ class RegistrarChaveService(
                         .asRuntimeException())
 
                 if (e.status.code == 500)
-                    responseObserver?.onError(Status.INTERNAL
-                        .withDescription("Não foi possível processar a solicitação!")
+                    responseObserver?.onError(Status.UNKNOWN
+                        .withDescription("Erro ao registrar chave Pix no Banco Central do Brasil (BCB)!")
                         .asRuntimeException())
 
                 responseObserver?.onCompleted()

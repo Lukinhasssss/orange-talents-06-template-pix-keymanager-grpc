@@ -1,7 +1,7 @@
 package br.com.lukinhasssss.services
 
 import br.com.lukinhasssss.*
-import br.com.lukinhasssss.clients.ItauClient
+import br.com.lukinhasssss.clients.*
 import br.com.lukinhasssss.entities.ChavePix
 import br.com.lukinhasssss.repositories.ChavePixRepository
 import io.grpc.ManagedChannel
@@ -19,6 +19,8 @@ import org.junit.jupiter.api.BeforeEach
 import org.junit.jupiter.api.Test
 import org.junit.jupiter.api.assertThrows
 import org.mockito.Mockito
+import org.mockito.Mockito.`when`
+import java.util.*
 import javax.inject.Inject
 import javax.inject.Singleton
 
@@ -32,6 +34,9 @@ internal class RegistrarChaveServiceTest {
 
     @field:Inject
     lateinit var itauClient: ItauClient
+
+    @field:Inject
+    lateinit var bcbClient: BCBClient
 
     @BeforeEach
     internal fun setUp() {
@@ -47,7 +52,8 @@ internal class RegistrarChaveServiceTest {
             .setTipoConta(TipoConta.CONTA_CORRENTE)
             .build()
 
-        Mockito.`when`(itauClient.consultarConta(request.idCliente, request.tipoConta.name)).thenReturn(HttpResponse.ok())
+        `when`(itauClient.consultarConta(request.idCliente, request.tipoConta.name)).thenReturn(HttpResponse.ok(dadosDaContaResponse))
+        `when`(bcbClient.registrarChave(CreatePixKeyRequest(dadosDaContaResponse, request))).thenReturn(HttpResponse.created(CreatePixKeyResponse("12345678901")))
 
         val response = grpcClient.registrarChave(request)
 
@@ -66,7 +72,8 @@ internal class RegistrarChaveServiceTest {
             .setTipoConta(TipoConta.CONTA_CORRENTE)
             .build()
 
-        Mockito.`when`(itauClient.consultarConta(request.idCliente, request.tipoConta.name)).thenReturn(HttpResponse.ok())
+        `when`(itauClient.consultarConta(request.idCliente, request.tipoConta.name)).thenReturn(HttpResponse.ok(dadosDaContaResponse))
+        `when`(bcbClient.registrarChave(CreatePixKeyRequest(dadosDaContaResponse, request))).thenReturn(HttpResponse.created(CreatePixKeyResponse("")))
 
         val response = grpcClient.registrarChave(request)
 
@@ -85,7 +92,8 @@ internal class RegistrarChaveServiceTest {
             .setTipoConta(TipoConta.CONTA_CORRENTE)
             .build()
 
-        Mockito.`when`(itauClient.consultarConta(request.idCliente, request.tipoConta.name)).thenReturn(HttpResponse.ok())
+        `when`(itauClient.consultarConta(request.idCliente, request.tipoConta.name)).thenReturn(HttpResponse.ok(dadosDaContaResponse))
+        `when`(bcbClient.registrarChave(CreatePixKeyRequest(dadosDaContaResponse, request))).thenReturn(HttpResponse.created(CreatePixKeyResponse("+551198765432")))
 
         val response = grpcClient.registrarChave(request)
 
@@ -104,7 +112,8 @@ internal class RegistrarChaveServiceTest {
             .setTipoConta(TipoConta.CONTA_CORRENTE)
             .build()
 
-        Mockito.`when`(itauClient.consultarConta(request.idCliente, request.tipoConta.name)).thenReturn(HttpResponse.ok())
+        `when`(itauClient.consultarConta(request.idCliente, request.tipoConta.name)).thenReturn(HttpResponse.ok(dadosDaContaResponse))
+        `when`(bcbClient.registrarChave(CreatePixKeyRequest(dadosDaContaResponse, request))).thenReturn(HttpResponse.created(CreatePixKeyResponse("92678134568")))
 
         val response = grpcClient.registrarChave(request)
 
@@ -123,7 +132,8 @@ internal class RegistrarChaveServiceTest {
             .setTipoConta(TipoConta.CONTA_CORRENTE)
             .build()
 
-        Mockito.`when`(itauClient.consultarConta(request.idCliente, request.tipoConta.name)).thenReturn(HttpResponse.ok())
+        `when`(itauClient.consultarConta(request.idCliente, request.tipoConta.name)).thenReturn(HttpResponse.ok(dadosDaContaResponse))
+        `when`(bcbClient.registrarChave(CreatePixKeyRequest(dadosDaContaResponse, request))).thenReturn(HttpResponse.created(CreatePixKeyResponse("zoro@gmail.com")))
 
         val response = grpcClient.registrarChave(request)
 
@@ -143,7 +153,7 @@ internal class RegistrarChaveServiceTest {
             .setTipoConta(TipoConta.CONTA_CORRENTE)
             .build()
 
-        Mockito.`when`(itauClient.consultarConta(request.idCliente, request.tipoConta.name)).thenReturn(HttpResponse.notFound())
+        `when`(itauClient.consultarConta(request.idCliente, request.tipoConta.name)).thenReturn(HttpResponse.notFound())
 
         val exception = assertThrows<StatusRuntimeException> {
             grpcClient.registrarChave(request)
@@ -157,7 +167,7 @@ internal class RegistrarChaveServiceTest {
     }
 
     @Test
-    internal fun `deve retornar INTERNAL quando ocorrer um erro ao fazer a requisicao para o cliente externo`() {
+    internal fun `deve retornar UNKNOWN quando ocorrer um erro ao fazer uma requisicao para o cliente externo do Itau`() {
         val request = RegistrarChaveRequest.newBuilder()
             .setIdCliente("c56dfef4-7901-44fb-84e2-a2cefb157890")
             .setTipoChave(TipoChave.CPF)
@@ -165,15 +175,38 @@ internal class RegistrarChaveServiceTest {
             .setTipoConta(TipoConta.CONTA_CORRENTE)
             .build()
 
-        Mockito.`when`(itauClient.consultarConta(request.idCliente, request.tipoConta.name)).thenReturn(HttpResponse.status(HttpStatus.INTERNAL_SERVER_ERROR))
+        `when`(itauClient.consultarConta(request.idCliente, request.tipoConta.name)).thenReturn(HttpResponse.status(HttpStatus.INTERNAL_SERVER_ERROR))
 
         val exception = assertThrows<StatusRuntimeException> {
             grpcClient.registrarChave(request)
         }
 
         with(exception){
-            assertEquals("Não foi possível fazer a requisição para o cliente externo!", status.description)
-            assertEquals(Status.INTERNAL.code, status.code)
+            assertEquals("Erro ao registrar chave Pix no Banco Central do Brasil (BCB)!", status.description)
+            assertEquals(Status.UNKNOWN.code, status.code)
+            assertTrue(pixRepository.findAll().isEmpty())
+        }
+    }
+
+    @Test
+    internal fun `deve retornar UNKNOWN quando ocorrer um erro ao fazer uma requisicao para o cliente externo do Banco Central`() {
+        val request = RegistrarChaveRequest.newBuilder()
+            .setIdCliente("c56dfef4-7901-44fb-84e2-a2cefb157890")
+            .setTipoChave(TipoChave.CPF)
+            .setValorChave("12345678901")
+            .setTipoConta(TipoConta.CONTA_CORRENTE)
+            .build()
+
+        `when`(itauClient.consultarConta(request.idCliente, request.tipoConta.name)).thenReturn(HttpResponse.ok(dadosDaContaResponse))
+        `when`(bcbClient.registrarChave(CreatePixKeyRequest(dadosDaContaResponse, request))).thenReturn(HttpResponse.status(HttpStatus.INTERNAL_SERVER_ERROR))
+
+        val exception = assertThrows<StatusRuntimeException> {
+            grpcClient.registrarChave(request)
+        }
+
+        with(exception){
+            assertEquals("Erro ao registrar chave Pix no Banco Central do Brasil (BCB)!", status.description)
+            assertEquals(Status.UNKNOWN.code, status.code)
             assertTrue(pixRepository.findAll().isEmpty())
         }
     }
@@ -463,5 +496,18 @@ internal class RegistrarChaveServiceTest {
     fun itauMock(): ItauClient {
         return Mockito.mock(ItauClient::class.java)
     }
+
+    @MockBean(BCBClient::class)
+    fun bcbMock(): BCBClient {
+        return Mockito.mock(BCBClient::class.java)
+    }
+
+    private val dadosDaContaResponse = DadosDaContaResponse(
+        "CONTA_CORRENTE",
+        InstituicaoResponse("Banco", "651161"),
+        "0001",
+        "1234567",
+        TitularResponse(UUID.randomUUID().toString(), "Monkey D. Luffy", "98745612319")
+    )
 
 }

@@ -37,11 +37,11 @@ class RemoverChaveService(
 
                 if (e.status.code == 404)
                     responseObserver?.onError(Status.NOT_FOUND
-                        .withDescription("Chave Pix não encontrada ou não pertence ao cliente!")
+                        .withDescription("Chave Pix não encontrada!")
                         .asRuntimeException())
 
                 responseObserver?.onError(Status.UNKNOWN
-                    .withDescription("Não foi possível processar a solicitação!")
+                    .withDescription("Erro ao remover chave Pix no Banco Central do Brasil (BCB)!")
                     .asRuntimeException())
             }
         }
