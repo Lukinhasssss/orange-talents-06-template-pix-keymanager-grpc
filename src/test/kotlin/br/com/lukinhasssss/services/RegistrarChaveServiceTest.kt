@@ -47,7 +47,7 @@ internal class RegistrarChaveServiceTest {
             .setTipoConta(TipoConta.CONTA_CORRENTE)
             .build()
 
-        Mockito.`when`(itauClient.buscarContaPorTipo(request.idCliente, request.tipoConta.name)).thenReturn(HttpResponse.ok())
+        Mockito.`when`(itauClient.consultarConta(request.idCliente, request.tipoConta.name)).thenReturn(HttpResponse.ok())
 
         val response = grpcClient.registrarChave(request)
 
@@ -58,15 +58,15 @@ internal class RegistrarChaveServiceTest {
     }
 
     @Test
-    internal fun `deve registrar uma nova chave pix quando a chave for CHAVE_ALEATORIA e o valor for vazio`() {
+    internal fun `deve registrar uma nova chave pix quando a chave for ALEATORIA e o valor for vazio`() {
         val request = RegistrarChaveRequest.newBuilder()
             .setIdCliente("a61e53c7-c99f-4d85-9974-6be73681b5a9")
-            .setTipoChave(TipoChave.CHAVE_ALEATORIA)
+            .setTipoChave(TipoChave.ALEATORIA)
             .setValorChave("")
             .setTipoConta(TipoConta.CONTA_CORRENTE)
             .build()
 
-        Mockito.`when`(itauClient.buscarContaPorTipo(request.idCliente, request.tipoConta.name)).thenReturn(HttpResponse.ok())
+        Mockito.`when`(itauClient.consultarConta(request.idCliente, request.tipoConta.name)).thenReturn(HttpResponse.ok())
 
         val response = grpcClient.registrarChave(request)
 
@@ -85,7 +85,7 @@ internal class RegistrarChaveServiceTest {
             .setTipoConta(TipoConta.CONTA_CORRENTE)
             .build()
 
-        Mockito.`when`(itauClient.buscarContaPorTipo(request.idCliente, request.tipoConta.name)).thenReturn(HttpResponse.ok())
+        Mockito.`when`(itauClient.consultarConta(request.idCliente, request.tipoConta.name)).thenReturn(HttpResponse.ok())
 
         val response = grpcClient.registrarChave(request)
 
@@ -104,7 +104,7 @@ internal class RegistrarChaveServiceTest {
             .setTipoConta(TipoConta.CONTA_CORRENTE)
             .build()
 
-        Mockito.`when`(itauClient.buscarContaPorTipo(request.idCliente, request.tipoConta.name)).thenReturn(HttpResponse.ok())
+        Mockito.`when`(itauClient.consultarConta(request.idCliente, request.tipoConta.name)).thenReturn(HttpResponse.ok())
 
         val response = grpcClient.registrarChave(request)
 
@@ -123,7 +123,7 @@ internal class RegistrarChaveServiceTest {
             .setTipoConta(TipoConta.CONTA_CORRENTE)
             .build()
 
-        Mockito.`when`(itauClient.buscarContaPorTipo(request.idCliente, request.tipoConta.name)).thenReturn(HttpResponse.ok())
+        Mockito.`when`(itauClient.consultarConta(request.idCliente, request.tipoConta.name)).thenReturn(HttpResponse.ok())
 
         val response = grpcClient.registrarChave(request)
 
@@ -143,14 +143,14 @@ internal class RegistrarChaveServiceTest {
             .setTipoConta(TipoConta.CONTA_CORRENTE)
             .build()
 
-        Mockito.`when`(itauClient.buscarContaPorTipo(request.idCliente, request.tipoConta.name)).thenReturn(HttpResponse.notFound())
+        Mockito.`when`(itauClient.consultarConta(request.idCliente, request.tipoConta.name)).thenReturn(HttpResponse.notFound())
 
         val exception = assertThrows<StatusRuntimeException> {
             grpcClient.registrarChave(request)
         }
 
         with(exception){
-            assertEquals("Não foi possível encontrar o cliente com o id informado!", status.description)
+            assertEquals("Cliente não encontrado!", status.description)
             assertEquals(Status.NOT_FOUND.code, status.code)
             assertTrue(pixRepository.findAll().isEmpty())
         }
@@ -165,7 +165,7 @@ internal class RegistrarChaveServiceTest {
             .setTipoConta(TipoConta.CONTA_CORRENTE)
             .build()
 
-        Mockito.`when`(itauClient.buscarContaPorTipo(request.idCliente, request.tipoConta.name)).thenReturn(HttpResponse.status(HttpStatus.INTERNAL_SERVER_ERROR))
+        Mockito.`when`(itauClient.consultarConta(request.idCliente, request.tipoConta.name)).thenReturn(HttpResponse.status(HttpStatus.INTERNAL_SERVER_ERROR))
 
         val exception = assertThrows<StatusRuntimeException> {
             grpcClient.registrarChave(request)
@@ -231,14 +231,14 @@ internal class RegistrarChaveServiceTest {
 
         pixRepository.save(ChavePix(
             idCliente = "c56dfef4-7901-44fb-84e2-a2cefb157890",
-            tipoChave = TipoChave.CHAVE_ALEATORIA,
+            tipoChave = TipoChave.ALEATORIA,
             valorChave = "",
             tipoConta = TipoConta.CONTA_CORRENTE
         ))
 
         pixRepository.save(ChavePix(
             idCliente = "c56dfef4-7901-44fb-84e2-a2cefb157890",
-            tipoChave = TipoChave.CHAVE_ALEATORIA,
+            tipoChave = TipoChave.ALEATORIA,
             valorChave = "",
             tipoConta = TipoConta.CONTA_CORRENTE
         ))
@@ -246,7 +246,7 @@ internal class RegistrarChaveServiceTest {
         val request = RegistrarChaveRequest
             .newBuilder()
             .setIdCliente("c56dfef4-7901-44fb-84e2-a2cefb157890")
-            .setTipoChave(TipoChave.CHAVE_ALEATORIA)
+            .setTipoChave(TipoChave.ALEATORIA)
             .setValorChave("")
             .setTipoConta(TipoConta.CONTA_CORRENTE)
             .build()
@@ -309,7 +309,7 @@ internal class RegistrarChaveServiceTest {
         val request = RegistrarChaveRequest
             .newBuilder()
             .setIdCliente("c56dfef4-7901-44fb-84e2-a2cefb157890")
-            .setTipoChave(TipoChave.CHAVE_ALEATORIA)
+            .setTipoChave(TipoChave.ALEATORIA)
             .setValorChave("")
             .setTipoConta(TipoConta.CONTA_INVALIDA)
             .build()
@@ -330,7 +330,7 @@ internal class RegistrarChaveServiceTest {
         val request = RegistrarChaveRequest
             .newBuilder()
             .setIdCliente("c56dfef4-7901-44fb-84e2")
-            .setTipoChave(TipoChave.CHAVE_ALEATORIA)
+            .setTipoChave(TipoChave.ALEATORIA)
             .setValorChave("")
             .setTipoConta(TipoConta.CONTA_CORRENTE)
             .build()
@@ -372,7 +372,7 @@ internal class RegistrarChaveServiceTest {
         val request = RegistrarChaveRequest
             .newBuilder()
             .setIdCliente("c56dfef4-7901-44fb-84e2-a2cefb157890")
-            .setTipoChave(TipoChave.CHAVE_ALEATORIA)
+            .setTipoChave(TipoChave.ALEATORIA)
             .setValorChave("HODOR")
             .setTipoConta(TipoConta.CONTA_CORRENTE)
             .build()

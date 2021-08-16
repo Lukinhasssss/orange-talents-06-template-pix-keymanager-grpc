@@ -11,17 +11,16 @@ import io.grpc.stub.StreamObserver
 import java.util.*
 
 fun RegistrarChaveRequest.converterParaChavePix(): ChavePix = ChavePix(
-    idCliente = this.idCliente,
-    tipoChave = this.tipoChave,
-    valorChave = this.valorChave.ifBlank { UUID.randomUUID().toString() },
-    tipoConta = this.tipoConta
+    idCliente = idCliente,
+    tipoChave = tipoChave,
+    valorChave = valorChave.ifBlank { UUID.randomUUID().toString() },
+    tipoConta = tipoConta
 )
 
 fun RegistrarChaveRequest.isValid(
     pixRepository: ChavePixRepository,
     responseObserver: StreamObserver<RegistrarChaveResponse>?
 ): Boolean {
-    with(this) {
         if (tipoChave == TipoChave.CHAVE_INVALIDA) {
             responseObserver?.onError(Status.INVALID_ARGUMENT.withDescription("Tipo de chave é inválido!").asRuntimeException())
             return false
@@ -55,12 +54,12 @@ fun RegistrarChaveRequest.isValid(
             return false
         }
 
-        if (tipoChave != TipoChave.CHAVE_ALEATORIA && valorChave.isBlank()) {
+        if (tipoChave != TipoChave.ALEATORIA && valorChave.isBlank()) {
             responseObserver?.onError(Status.INVALID_ARGUMENT.withDescription("Chave deve ser informada!").asRuntimeException())
             return false
         }
 
-        if (tipoChave == TipoChave.CHAVE_ALEATORIA && valorChave.isNotBlank()) {
+        if (tipoChave == TipoChave.ALEATORIA && valorChave.isNotBlank()) {
             responseObserver?.onError(Status.INVALID_ARGUMENT
                 .withDescription("Quando o tipo de chave for aleatória o valor não deve ser preenchido!")
                 .asRuntimeException())
@@ -90,7 +89,6 @@ fun RegistrarChaveRequest.isValid(
                 .asRuntimeException())
             return false
         }
-    }
     return true
 }
 

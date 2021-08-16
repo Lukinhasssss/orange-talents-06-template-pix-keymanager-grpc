@@ -15,7 +15,7 @@ enum TipoChave {
   CELULAR = 1;
   CPF = 2;
   EMAIL = 3;
-  CHAVE_ALEATORIA = 4;
+  ALEATORIA = 4;
 }
 
 enum TipoConta {

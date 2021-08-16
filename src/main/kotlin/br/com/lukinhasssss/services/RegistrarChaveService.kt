@@ -3,6 +3,8 @@ package br.com.lukinhasssss.services
 import br.com.lukinhasssss.RegistrarChaveServiceGrpc
 import br.com.lukinhasssss.RegistrarChaveRequest
 import br.com.lukinhasssss.RegistrarChaveResponse
+import br.com.lukinhasssss.clients.BCBClient
+import br.com.lukinhasssss.clients.CreatePixKeyRequest
 import br.com.lukinhasssss.clients.ItauClient
 import br.com.lukinhasssss.repositories.ChavePixRepository
 import br.com.lukinhasssss.validations.converterParaChavePix
@@ -16,7 +18,8 @@ import javax.inject.Singleton
 @Singleton
 class RegistrarChaveService(
     private val pixRepository: ChavePixRepository,
-    private val itauClient: ItauClient
+    private val itauClient: ItauClient,
+    private val bcbClient: BCBClient
 ) : RegistrarChaveServiceGrpc.RegistrarChaveServiceImplBase() {
 
     private val logger = LoggerFactory.getLogger(RegistrarChaveService::class.java)
@@ -28,10 +31,11 @@ class RegistrarChaveService(
 
         if (request!!.isValid(pixRepository, responseObserver)) {
             try {
-                itauClient.buscarContaPorTipo(request.idCliente, request.tipoConta.name).let { response ->
+                itauClient.consultarConta(request.idCliente, request.tipoConta.name).let { response ->
                     if (response.status.code == 404 || response.status.code == 500)
                         throw HttpClientResponseException("", response)
 
+                    bcbClient.registrarChave(CreatePixKeyRequest(response.body()!!, request))
                     pixRepository.save(request.converterParaChavePix()).let { chavePix ->
                         responseObserver?.onNext(RegistrarChaveResponse.newBuilder().setPixId(chavePix.pixId).build())
                         responseObserver?.onCompleted()
@@ -40,12 +44,12 @@ class RegistrarChaveService(
             } catch (e: HttpClientResponseException) {
                 if (e.status.code == 404)
                     responseObserver?.onError(Status.NOT_FOUND
-                        .withDescription("Não foi possível encontrar o cliente com o id informado!")
+                        .withDescription("Cliente não encontrado!")
                         .asRuntimeException())
 
                 if (e.status.code == 500)
                     responseObserver?.onError(Status.INTERNAL
-                        .withDescription("Não foi possível fazer a requisição para o cliente externo!")
+                        .withDescription("Não foi possível processar a solicitação!")
                         .asRuntimeException())
 
                 responseObserver?.onCompleted()
