@@ -4,16 +4,16 @@ import br.com.lukinhasssss.RegistrarChaveRequest
 import br.com.lukinhasssss.RegistrarChaveResponse
 import br.com.lukinhasssss.TipoChave
 import br.com.lukinhasssss.TipoConta
+import br.com.lukinhasssss.clients.CreatePixKeyResponse
 import br.com.lukinhasssss.entities.ChavePix
 import br.com.lukinhasssss.repositories.ChavePixRepository
 import io.grpc.Status
 import io.grpc.stub.StreamObserver
-import java.util.*
 
-fun RegistrarChaveRequest.converterParaChavePix(): ChavePix = ChavePix(
+fun RegistrarChaveRequest.converterParaChavePix(createPixKeyResponse: CreatePixKeyResponse?): ChavePix = ChavePix(
     idCliente = idCliente,
     tipoChave = tipoChave,
-    valorChave = valorChave.ifBlank { UUID.randomUUID().toString() },
+    valorChave = createPixKeyResponse!!.key,
     tipoConta = tipoConta
 )
 
@@ -36,11 +36,6 @@ fun RegistrarChaveRequest.isValid(
                 .withDescription("Número máximo de chaves cadastradas!")
                 .augmentDescription("Para cadastrar mais chaves remova uma chave existente.")
                 .asRuntimeException())
-            return false
-        }
-
-        if (pixRepository.existsByTipoChaveAndValorChave(tipoChave, valorChave)) {
-            responseObserver?.onError(Status.ALREADY_EXISTS.withDescription("Chave já cadastrada!").asRuntimeException())
             return false
         }
 

@@ -144,7 +144,7 @@ internal class RegistrarChaveServiceTest {
     }
 
     @Test
-    internal fun `deve retornar NOT_FOUND quando o id do cliente nao for encontrado`() {
+    internal fun `deve retornar NOT_FOUND quando a conta do cliente nao for encontrada e nao deve registrar uma nova chave`() {
 
         val request = RegistrarChaveRequest.newBuilder()
             .setIdCliente("a61e53c7-c99f-4d85-9974-6be73681b5a9")
@@ -160,8 +160,38 @@ internal class RegistrarChaveServiceTest {
         }
 
         with(exception){
-            assertEquals("Cliente não encontrado!", status.description)
+            assertEquals("Conta não encontrada!", status.description)
             assertEquals(Status.NOT_FOUND.code, status.code)
+            assertTrue(pixRepository.findAll().isEmpty())
+        }
+    }
+
+    @Test
+    internal fun `deve retornar ALREADY_EXISTS quando a chave ja estiver registrada e nao deve registrar uma nova chave`() {
+//        pixRepository.save(ChavePix(
+//            idCliente = "c56dfef4-7901-44fb-84e2-a2cefb157890",
+//            tipoChave = TipoChave.CPF,
+//            valorChave = "12345678901",
+//            tipoConta = TipoConta.CONTA_CORRENTE
+//        ))
+
+        val request = RegistrarChaveRequest
+            .newBuilder()
+            .setIdCliente("c56dfef4-7901-44fb-84e2-a2cefb157890")
+            .setTipoChave(TipoChave.CPF)
+            .setValorChave("12345678901")
+            .setTipoConta(TipoConta.CONTA_CORRENTE)
+            .build()
+
+        `when`(itauClient.consultarConta(request.idCliente, request.tipoConta.name)).thenReturn(HttpResponse.status(HttpStatus.UNPROCESSABLE_ENTITY))
+
+        val exception = assertThrows<StatusRuntimeException> {
+            grpcClient.registrarChave(request)
+        }
+
+        with(exception){
+            assertEquals("Chave já registrada!", status.description)
+            assertEquals(Status.ALREADY_EXISTS.code, status.code)
             assertTrue(pixRepository.findAll().isEmpty())
         }
     }
@@ -212,35 +242,7 @@ internal class RegistrarChaveServiceTest {
     }
 
     @Test
-    internal fun `deve retornar ALREADY_EXISTS quando a chave ja existir`() {
-        pixRepository.save(ChavePix(
-            idCliente = "c56dfef4-7901-44fb-84e2-a2cefb157890",
-            tipoChave = TipoChave.CPF,
-            valorChave = "12345678901",
-            tipoConta = TipoConta.CONTA_CORRENTE
-        ))
-
-        val request = RegistrarChaveRequest
-            .newBuilder()
-            .setIdCliente("c56dfef4-7901-44fb-84e2-a2cefb157890")
-            .setTipoChave(TipoChave.CPF)
-            .setValorChave("12345678901")
-            .setTipoConta(TipoConta.CONTA_CORRENTE)
-            .build()
-
-        val exception = assertThrows<StatusRuntimeException> {
-            grpcClient.registrarChave(request)
-        }
-
-        with(exception){
-            assertEquals("Chave já cadastrada!", status.description)
-            assertEquals(Status.ALREADY_EXISTS.code, status.code)
-            assertTrue(pixRepository.findAll().size == 1)
-        }
-    }
-
-    @Test
-    internal fun `deve retornar INVALID_ARGUMENT quando o cliente tentar cadastrar mais de cinco chaves`() {
+    internal fun `deve retornar INVALID_ARGUMENT quando o cliente tentar cadastrar mais de cinco chaves e nao deve registrar uma nova chave`() {
         pixRepository.save(ChavePix(
             idCliente = "c56dfef4-7901-44fb-84e2-a2cefb157890",
             tipoChave = TipoChave.CPF,
@@ -296,7 +298,7 @@ internal class RegistrarChaveServiceTest {
     }
 
     @Test
-    internal fun `deve retornar INVALID_ARGUMENT quando a chave tiver mais de 77 caracteres`() {
+    internal fun `deve retornar INVALID_ARGUMENT quando a chave tiver mais de 77 caracteres e nao deve registrar uma nova chave`() {
         val request = RegistrarChaveRequest
             .newBuilder()
             .setIdCliente("c56dfef4-7901-44fb-84e2-a2cefb157890")
@@ -317,7 +319,7 @@ internal class RegistrarChaveServiceTest {
     }
 
     @Test
-    internal fun `deve retornar INVALID_ARGUMENT quando o tipo de chave for CHAVE_INVALIDA`() {
+    internal fun `deve retornar INVALID_ARGUMENT quando o tipo de chave for CHAVE_INVALIDA e nao deve registrar uma nova chave`() {
         val request = RegistrarChaveRequest
             .newBuilder()
             .setIdCliente("c56dfef4-7901-44fb-84e2-a2cefb157890")
@@ -338,7 +340,7 @@ internal class RegistrarChaveServiceTest {
     }
 
     @Test
-    internal fun `deve retornar INVALID_ARGUMENT quando o tipo de conta for invalido`() {
+    internal fun `deve retornar INVALID_ARGUMENT quando o tipo de conta for invalido e nao deve registrar uma nova chave`() {
         val request = RegistrarChaveRequest
             .newBuilder()
             .setIdCliente("c56dfef4-7901-44fb-84e2-a2cefb157890")
@@ -359,7 +361,7 @@ internal class RegistrarChaveServiceTest {
     }
 
     @Test
-    internal fun `deve retornar INVALID_ARGUMENT quando o id do cliente for nulo ou nao for um UUID valido`() {
+    internal fun `deve retornar INVALID_ARGUMENT quando o id do cliente for nulo ou nao for um UUID valido e nao deve registrar uma nova chave`() {
         val request = RegistrarChaveRequest
             .newBuilder()
             .setIdCliente("c56dfef4-7901-44fb-84e2")
@@ -380,7 +382,7 @@ internal class RegistrarChaveServiceTest {
     }
 
     @Test
-    internal fun `deve retornar INVALID_ARGUMENT quando o tipo de chave for diferente de ALEATORIA e o valor da chave for vazio`() {
+    internal fun `deve retornar INVALID_ARGUMENT quando o tipo de chave for diferente de ALEATORIA e o valor da chave for vazio e nao deve registrar uma nova chave`() {
         val request = RegistrarChaveRequest
             .newBuilder()
             .setIdCliente("c56dfef4-7901-44fb-84e2-a2cefb157890")
@@ -401,7 +403,7 @@ internal class RegistrarChaveServiceTest {
     }
 
     @Test
-    internal fun `deve retornar INVALID_ARGUMENT quando o tipo de chave for ALEATORIA e o valor for preenchido`() {
+    internal fun `deve retornar INVALID_ARGUMENT quando o tipo de chave for ALEATORIA e o valor for preenchido e nao deve registrar uma nova chave`() {
         val request = RegistrarChaveRequest
             .newBuilder()
             .setIdCliente("c56dfef4-7901-44fb-84e2-a2cefb157890")
@@ -422,7 +424,7 @@ internal class RegistrarChaveServiceTest {
     }
 
     @Test
-    internal fun `deve retornar INVALID_ARGUMENT quando o tipo de chave for CELULAR e o celular nao tiver formato valido`() {
+    internal fun `deve retornar INVALID_ARGUMENT quando o tipo de chave for CELULAR e o celular nao tiver formato valido e nao deve registrar uma nova chave`() {
         val request = RegistrarChaveRequest
             .newBuilder()
             .setIdCliente("c56dfef4-7901-44fb-84e2-a2cefb157890")
@@ -443,7 +445,7 @@ internal class RegistrarChaveServiceTest {
     }
 
     @Test
-    internal fun `deve retornar INVALID_ARGUMENT quando o tipo de chave for CPF e o cpf nao tiver formato valido`() {
+    internal fun `deve retornar INVALID_ARGUMENT quando o tipo de chave for CPF e o cpf nao tiver formato valido e nao deve registrar uma nova chave`() {
         val request = RegistrarChaveRequest
             .newBuilder()
             .setIdCliente("c56dfef4-7901-44fb-84e2-a2cefb157890")
@@ -464,7 +466,7 @@ internal class RegistrarChaveServiceTest {
     }
 
     @Test
-    internal fun `deve retornar INVALID_ARGUMENT quando o tipo de chave for EMAIL e o email nao tiver formato valido`() {
+    internal fun `deve retornar INVALID_ARGUMENT quando o tipo de chave for EMAIL e o email nao tiver formato valido e nao deve registrar uma nova chave`() {
         val request = RegistrarChaveRequest
             .newBuilder()
             .setIdCliente("c56dfef4-7901-44fb-84e2-a2cefb157890")

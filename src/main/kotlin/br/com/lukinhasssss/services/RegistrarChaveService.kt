@@ -32,13 +32,14 @@ class RegistrarChaveService(
         if (request!!.isValid(pixRepository, responseObserver)) {
             try {
                 itauClient.consultarConta(request.idCliente, request.tipoConta.name).let { response ->
-                    if (response.status.code == 404 || response.status.code == 500)
+                    if (response.status.code != 200)
                         throw HttpClientResponseException("", response)
 
                     bcbClient.registrarChave(CreatePixKeyRequest(response.body()!!, request)).let { bcbResponse ->
                         if (bcbResponse.status.code != 201)
                             throw HttpClientResponseException("", bcbResponse)
-                        pixRepository.save(request.converterParaChavePix()).let { chavePix ->
+
+                        pixRepository.save(request.converterParaChavePix(bcbResponse.body())).let { chavePix ->
                             responseObserver?.onNext(RegistrarChaveResponse.newBuilder().setPixId(chavePix.pixId).build())
                             responseObserver?.onCompleted()
                         }
@@ -47,15 +48,18 @@ class RegistrarChaveService(
             } catch (e: HttpClientResponseException) {
                 if (e.status.code == 404)
                     responseObserver?.onError(Status.NOT_FOUND
-                        .withDescription("Cliente não encontrado!")
+                        .withDescription("Conta não encontrada!")
+                        .asRuntimeException())
+
+                if (e.status.code == 422)
+                    responseObserver?.onError(Status.ALREADY_EXISTS
+                        .withDescription("Chave já registrada!")
                         .asRuntimeException())
 
                 if (e.status.code == 500)
                     responseObserver?.onError(Status.UNKNOWN
                         .withDescription("Erro ao registrar chave Pix no Banco Central do Brasil (BCB)!")
                         .asRuntimeException())
-
-                responseObserver?.onCompleted()
             }
         }
 
