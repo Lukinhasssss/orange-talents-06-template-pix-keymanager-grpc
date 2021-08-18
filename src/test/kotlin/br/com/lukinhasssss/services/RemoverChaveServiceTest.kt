@@ -75,7 +75,7 @@ internal class RemoverChaveServiceTest {
         }
 
         with(exception) {
-            assertEquals("Chave Pix não encontrada ou não pertence ao cliente!", status.description)
+            assertEquals("Chave Pix não pertence ao cliente!", status.description)
             assertEquals(Status.PERMISSION_DENIED.code, status.code)
             assertTrue(pixRepository.findAll().isNotEmpty())
         }
@@ -95,7 +95,7 @@ internal class RemoverChaveServiceTest {
         }
 
         with(exception) {
-            assertEquals("Chave Pix não encontrada ou não pertence ao cliente!", status.description)
+            assertEquals("Chave Pix não pertence ao cliente!", status.description)
             assertEquals(Status.PERMISSION_DENIED.code, status.code)
             assertTrue(pixRepository.findAll().isNotEmpty())
         }

@@ -24,11 +24,14 @@ class RemoverChaveService(
             try {
                 val chavePix = pixRepository.findById(request.pixId).get()
 
-                bcbClient.removerChave(chavePix.valorChave, DeletePixKeyRequest(chavePix.valorChave))
+                bcbClient.removerChave(chavePix.valorChave, DeletePixKeyRequest(chavePix.valorChave)).let { response ->
+                    if (response.status.code != 200)
+                        throw HttpClientResponseException("", response)
 
-                pixRepository.deleteById(request.pixId)
-                responseObserver?.onNext(RemoverChaveResponse.newBuilder().build())
-                responseObserver?.onCompleted()
+                    pixRepository.deleteById(request.pixId)
+                    responseObserver?.onNext(RemoverChaveResponse.newBuilder().build())
+                    responseObserver?.onCompleted()
+                }
             } catch (e: HttpClientResponseException) {
                 if (e.status.code == 403)
                     responseObserver?.onError(Status.PERMISSION_DENIED
