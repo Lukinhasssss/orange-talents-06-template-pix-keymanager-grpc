@@ -32,7 +32,7 @@ class RemoverChaveService(
             } catch (e: HttpClientResponseException) {
                 if (e.status.code == 403)
                     responseObserver?.onError(Status.PERMISSION_DENIED
-                        .withDescription("Chave Pix não encontrada ou não pertence ao cliente!")
+                        .withDescription("Chave Pix não pertence ao cliente!")
                         .asRuntimeException())
 
                 if (e.status.code == 404)

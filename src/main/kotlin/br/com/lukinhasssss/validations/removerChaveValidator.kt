@@ -27,7 +27,7 @@ fun RemoverChaveRequest.isValid(
         }
 
         if (!pixRepository.existsByPixIdAndIdCliente(pixId, idCliente)) {
-            responseObserver?.onError(Status.PERMISSION_DENIED.withDescription("Chave Pix não encontrada ou não pertence ao cliente!").asRuntimeException())
+            responseObserver?.onError(Status.PERMISSION_DENIED.withDescription("Chave Pix não pertence ao cliente!").asRuntimeException())
             return false
         }
         return true

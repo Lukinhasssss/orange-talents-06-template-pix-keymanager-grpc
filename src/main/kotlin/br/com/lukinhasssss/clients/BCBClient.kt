@@ -6,12 +6,13 @@ import io.micronaut.http.HttpResponse
 import io.micronaut.http.MediaType
 import io.micronaut.http.annotation.*
 import io.micronaut.http.client.annotation.Client
+import java.time.LocalDateTime
 
 @Client("\${clients.bcb}")
 interface BCBClient {
 
     @Get("/{key}")
-    fun buscarChavePorId(@PathVariable key: String): HttpResponse<Unit>
+    fun buscarChave(@PathVariable key: String): HttpResponse<PixKeyDetailsResponse>
 
     @Post
     @Produces(MediaType.APPLICATION_XML)
@@ -23,6 +24,27 @@ interface BCBClient {
 
 }
 
+data class PixKeyDetailsResponse(
+    val keyType: String,
+    val key: String,
+    var bankAccount: BankAccountResponse,
+    val owner: OwnerResponse,
+    val createdAt: LocalDateTime
+)
+
+data class BankAccountResponse(
+    val participant: String,
+    val branch: String,
+    val accountNumber: String,
+    val accountType: String
+)
+
+data class OwnerResponse(
+    val type: String,
+    val name: String,
+    val taxIdNumber: String
+)
+
 data class CreatePixKeyResponse(
     val key: String
 )
@@ -30,7 +52,7 @@ data class CreatePixKeyResponse(
 data class CreatePixKeyRequest(
     val keyType: String,
     val key: String,
-    var bankAccount: BankAccountRequest,
+    val bankAccount: BankAccountRequest,
     val owner: OwnerRequest
 ) {
     constructor(dadosDaConta: DadosDaContaResponse, request: RegistrarChaveRequest) : this(

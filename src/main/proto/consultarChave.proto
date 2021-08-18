@@ -1,0 +1,44 @@
+syntax = "proto3";
+
+option java_multiple_files = true;
+option java_package = "br.com.lukinhasssss";
+option java_outer_classname = "ConsultarChave";
+
+package br.com.lukinhasssss;
+
+import "google/protobuf/timestamp.proto";
+import "registrarChave.proto";
+
+service ConsultarChaveService {
+  rpc consultarChave (ConsultarChaveRequest) returns (ConsultarChaveResponse) {}
+}
+
+message Conta{
+  string instituicao = 1;
+  string agencia = 2;
+  string numero = 3;
+  TipoConta tipoConta = 4;
+}
+
+message ConsultarChaveRequest {
+  message FiltroPorPixId {
+    string pixId = 1;
+    string idCliente = 2;
+  }
+
+  oneof filtro {
+    FiltroPorPixId pixId = 1;
+    string chavePix = 2;
+  }
+}
+
+message ConsultarChaveResponse {
+  optional string pixId = 1;
+  optional string idCliente = 2;
+  string nome = 3;
+  string cpf = 4;
+  TipoChave tipoChave = 5;
+  string chave = 6;
+  Conta conta = 7;
+  google.protobuf.Timestamp criadoEm = 8;
+}

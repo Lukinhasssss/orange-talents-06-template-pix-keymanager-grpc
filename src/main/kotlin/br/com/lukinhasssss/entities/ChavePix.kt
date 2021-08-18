@@ -4,7 +4,6 @@ import br.com.lukinhasssss.TipoChave
 import br.com.lukinhasssss.TipoConta
 import org.hibernate.annotations.GenericGenerator
 import java.time.LocalDateTime
-import java.util.*
 import javax.persistence.*
 
 @Entity
