@@ -10,12 +10,14 @@ import br.com.lukinhasssss.repositories.ChavePixRepository
 import io.grpc.Status
 import io.grpc.stub.StreamObserver
 
-fun RegistrarChaveRequest.converterParaChavePix(createPixKeyResponse: CreatePixKeyResponse?): ChavePix = ChavePix(
-    idCliente = idCliente,
-    tipoChave = tipoChave,
-    valorChave = createPixKeyResponse!!.key,
-    tipoConta = tipoConta
-)
+fun RegistrarChaveRequest.converterParaChavePix(createPixKeyResponse: CreatePixKeyResponse): ChavePix {
+    return ChavePix(
+        idCliente = idCliente,
+        tipoChave = tipoChave,
+        valorChave = createPixKeyResponse.key,
+        tipoConta = tipoConta
+    )
+}
 
 fun RegistrarChaveRequest.isValid(
     pixRepository: ChavePixRepository,
@@ -84,6 +86,7 @@ fun RegistrarChaveRequest.isValid(
                 .asRuntimeException())
             return false
         }
+
     return true
 }
 

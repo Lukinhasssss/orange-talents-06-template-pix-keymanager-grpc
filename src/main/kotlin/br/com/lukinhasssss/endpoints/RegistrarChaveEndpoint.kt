@@ -1,8 +1,8 @@
-package br.com.lukinhasssss.services
+package br.com.lukinhasssss.endpoints
 
-import br.com.lukinhasssss.RegistrarChaveServiceGrpc
 import br.com.lukinhasssss.RegistrarChaveRequest
 import br.com.lukinhasssss.RegistrarChaveResponse
+import br.com.lukinhasssss.RegistrarChaveServiceGrpc
 import br.com.lukinhasssss.clients.BCBClient
 import br.com.lukinhasssss.clients.CreatePixKeyRequest
 import br.com.lukinhasssss.clients.ItauClient
@@ -16,20 +16,20 @@ import org.slf4j.LoggerFactory
 import javax.inject.Singleton
 
 @Singleton
-class RegistrarChaveService(
+class RegistrarChaveEndpoint(
     private val pixRepository: ChavePixRepository,
     private val itauClient: ItauClient,
     private val bcbClient: BCBClient
 ) : RegistrarChaveServiceGrpc.RegistrarChaveServiceImplBase() {
 
-    private val logger = LoggerFactory.getLogger(RegistrarChaveService::class.java)
+    private val logger = LoggerFactory.getLogger(RegistrarChaveEndpoint::class.java)
 
     override fun registrarChave(
         request: RegistrarChaveRequest?,
         responseObserver: StreamObserver<RegistrarChaveResponse>?
     ) {
 
-        if (request!!.isValid(pixRepository, responseObserver)) {
+        if (request != null && request.isValid(pixRepository, responseObserver)) {
             try {
                 itauClient.consultarConta(request.idCliente, request.tipoConta.name).let { response ->
                     if (response.status.code != 200)
@@ -39,7 +39,7 @@ class RegistrarChaveService(
                         if (bcbResponse.status.code != 201)
                             throw HttpClientResponseException("", bcbResponse)
 
-                        pixRepository.save(request.converterParaChavePix(bcbResponse.body())).let { chavePix ->
+                        pixRepository.save(request.converterParaChavePix(bcbResponse.body()!!)).let { chavePix ->
                             responseObserver?.onNext(RegistrarChaveResponse.newBuilder().setPixId(chavePix.pixId).build())
                             responseObserver?.onCompleted()
                         }

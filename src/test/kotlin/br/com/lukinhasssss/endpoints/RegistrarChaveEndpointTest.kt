@@ -1,4 +1,4 @@
-package br.com.lukinhasssss.services
+package br.com.lukinhasssss.endpoints
 
 import br.com.lukinhasssss.*
 import br.com.lukinhasssss.clients.*
@@ -25,7 +25,7 @@ import javax.inject.Inject
 import javax.inject.Singleton
 
 @MicronautTest(transactional = false)
-internal class RegistrarChaveServiceTest {
+internal class RegistrarChaveEndpointTest {
 
     @Inject
     lateinit var pixRepository: ChavePixRepository
@@ -168,13 +168,6 @@ internal class RegistrarChaveServiceTest {
 
     @Test
     internal fun `deve retornar ALREADY_EXISTS quando a chave ja estiver registrada e nao deve registrar uma nova chave`() {
-//        pixRepository.save(ChavePix(
-//            idCliente = "c56dfef4-7901-44fb-84e2-a2cefb157890",
-//            tipoChave = TipoChave.CPF,
-//            valorChave = "12345678901",
-//            tipoConta = TipoConta.CONTA_CORRENTE
-//        ))
-
         val request = RegistrarChaveRequest
             .newBuilder()
             .setIdCliente("c56dfef4-7901-44fb-84e2-a2cefb157890")

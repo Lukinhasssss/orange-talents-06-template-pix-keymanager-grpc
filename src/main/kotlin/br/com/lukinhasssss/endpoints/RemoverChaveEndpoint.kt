@@ -1,4 +1,4 @@
-package br.com.lukinhasssss.services
+package br.com.lukinhasssss.endpoints
 
 import br.com.lukinhasssss.RemoverChaveServiceGrpc
 import br.com.lukinhasssss.RemoverChaveRequest
@@ -14,7 +14,7 @@ import io.micronaut.http.client.exceptions.HttpClientResponseException
 import javax.inject.Singleton
 
 @Singleton
-class RemoverChaveService(
+class RemoverChaveEndpoint(
     private val pixRepository: ChavePixRepository,
     private val bcbClient: BCBClient
 ) : RemoverChaveServiceGrpc.RemoverChaveServiceImplBase() {

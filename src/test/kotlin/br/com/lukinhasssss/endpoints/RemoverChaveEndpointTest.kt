@@ -1,4 +1,4 @@
-package br.com.lukinhasssss.services
+package br.com.lukinhasssss.endpoints
 
 
 import br.com.lukinhasssss.*
@@ -27,7 +27,7 @@ import javax.inject.Inject
 import javax.inject.Singleton
 
 @MicronautTest(transactional = false)
-internal class RemoverChaveServiceTest {
+internal class RemoverChaveEndpointTest {
 
     @Inject
     lateinit var pixRepository: ChavePixRepository

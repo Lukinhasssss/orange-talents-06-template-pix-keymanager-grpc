@@ -3,6 +3,7 @@ package br.com.lukinhasssss.validations
 import br.com.lukinhasssss.*
 import br.com.lukinhasssss.clients.PixKeyDetailsResponse
 import br.com.lukinhasssss.repositories.ChavePixRepository
+import com.google.protobuf.Descriptors
 import com.google.protobuf.Timestamp
 import io.grpc.Status
 import io.grpc.stub.StreamObserver
@@ -12,7 +13,7 @@ fun ConsultarChaveRequest.isValid(
     pixRepository: ChavePixRepository,
     responseObserver: StreamObserver<ConsultarChaveResponse>?
 ): Boolean {
-    if (pixId != null && chavePix.isBlank()) {
+    if (hasPixId()) {
         if (pixId.pixId.isBlank()) {
             responseObserver?.onError(Status.INVALID_ARGUMENT.withDescription("PixId é obrigatório!").asRuntimeException())
             return false
@@ -20,6 +21,16 @@ fun ConsultarChaveRequest.isValid(
 
         if (pixId.idCliente.isBlank()) {
             responseObserver?.onError(Status.INVALID_ARGUMENT.withDescription("IdCliente é obrigatório!").asRuntimeException())
+            return false
+        }
+
+        if (!pixId.pixId.isUUID()) {
+            responseObserver?.onError(Status.INVALID_ARGUMENT.withDescription("PixId não é um UUID válido!").asRuntimeException())
+            return false
+        }
+
+        if (!pixId.idCliente.isUUID()) {
+            responseObserver?.onError(Status.INVALID_ARGUMENT.withDescription("IdCliente não é um UUID válido!").asRuntimeException())
             return false
         }
 
@@ -34,7 +45,7 @@ fun ConsultarChaveRequest.isValid(
         }
     }
 
-    if (chavePix.isNotBlank() && pixId == null) {
+    if (hasChavePix()) {
         if (chavePix.isBlank()) {
             responseObserver?.onError(Status.INVALID_ARGUMENT.withDescription("Chave Pix é obrigatória!").asRuntimeException())
             return false
