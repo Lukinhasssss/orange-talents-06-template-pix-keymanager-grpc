@@ -29,6 +29,7 @@ internal class RegistrarChaveEndpointTest {
 
     @Inject
     lateinit var pixRepository: ChavePixRepository
+
     @Inject
     lateinit var grpcClient: RegistrarChaveServiceGrpc.RegistrarChaveServiceBlockingStub
 

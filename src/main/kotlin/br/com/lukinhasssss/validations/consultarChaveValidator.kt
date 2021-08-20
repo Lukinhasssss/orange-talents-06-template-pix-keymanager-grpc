@@ -3,11 +3,12 @@ package br.com.lukinhasssss.validations
 import br.com.lukinhasssss.*
 import br.com.lukinhasssss.clients.PixKeyDetailsResponse
 import br.com.lukinhasssss.repositories.ChavePixRepository
-import com.google.protobuf.Descriptors
 import com.google.protobuf.Timestamp
 import io.grpc.Status
 import io.grpc.stub.StreamObserver
 import java.time.ZoneOffset
+import br.com.lukinhasssss.ConsultarChaveResponse.Conta.TipoConta as TipoConta
+import br.com.lukinhasssss.ConsultarChaveResponse.TipoChave as TipoChave
 
 fun ConsultarChaveRequest.isValid(
     pixRepository: ChavePixRepository,
@@ -67,7 +68,8 @@ fun PixKeyDetailsResponse.converter(request: ConsultarChaveRequest): ConsultarCh
             .setCpf(owner.taxIdNumber)
             .setTipoChave(keyType.converterParaTipoChave())
             .setChave(key)
-            .setConta(Conta.newBuilder()
+            .setConta(
+                ConsultarChaveResponse.Conta.newBuilder()
                 .setInstituicao(Instituicoes.nome(bankAccount.participant))
                 .setAgencia(bankAccount.branch)
                 .setNumero(bankAccount.accountNumber)
@@ -87,7 +89,8 @@ fun PixKeyDetailsResponse.converter(request: ConsultarChaveRequest): ConsultarCh
         .setCpf(owner.taxIdNumber)
         .setTipoChave(keyType.converterParaTipoChave())
         .setChave(key)
-        .setConta(Conta.newBuilder()
+        .setConta(
+            ConsultarChaveResponse.Conta.newBuilder()
             .setInstituicao(Instituicoes.nome(bankAccount.participant))
             .setAgencia(bankAccount.branch)
             .setNumero(bankAccount.accountNumber)

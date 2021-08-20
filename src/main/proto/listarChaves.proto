@@ -1,0 +1,31 @@
+syntax = "proto3";
+
+option java_multiple_files = true;
+option java_package = "br.com.lukinhasssss";
+option java_outer_classname = "ListarChaves";
+
+package br.com.lukinhasssss;
+
+import "google/protobuf/timestamp.proto";
+import "registrarChave.proto";
+
+service ListarChavesService {
+  rpc listarChaves (ListarChavesRequest) returns (ListarChavesResponse) {}
+}
+
+message ListarChavesRequest {
+  string idCliente = 1;
+}
+
+message ListarChavesResponse {
+  message ChavesPix {
+    string pixId = 1;
+    string idCliente = 2;
+    TipoChave tipoChave = 3;
+    string valorChave = 4;
+    TipoConta tipoConta = 5;
+    google.protobuf.Timestamp criadoEm = 6;
+  }
+
+  repeated ChavesPix chaves = 1;
+}

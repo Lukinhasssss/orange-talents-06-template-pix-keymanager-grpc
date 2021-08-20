@@ -7,17 +7,9 @@ option java_outer_classname = "ConsultarChave";
 package br.com.lukinhasssss;
 
 import "google/protobuf/timestamp.proto";
-import "registrarChave.proto";
 
 service ConsultarChaveService {
   rpc consultarChave (ConsultarChaveRequest) returns (ConsultarChaveResponse) {}
-}
-
-message Conta{
-  string instituicao = 1;
-  string agencia = 2;
-  string numero = 3;
-  TipoConta tipoConta = 4;
 }
 
 message ConsultarChaveRequest {
@@ -33,6 +25,27 @@ message ConsultarChaveRequest {
 }
 
 message ConsultarChaveResponse {
+  enum TipoChave {
+    CHAVE_INVALIDA = 0;
+    CELULAR = 1;
+    CPF = 2;
+    EMAIL = 3;
+    ALEATORIA = 4;
+  }
+
+  message Conta{
+    enum TipoConta {
+      CONTA_INVALIDA = 0;
+      CONTA_CORRENTE = 1;
+      CONTA_POUPANCA = 2;
+    }
+
+    string instituicao = 1;
+    string agencia = 2;
+    string numero = 3;
+    TipoConta tipoConta = 4;
+  }
+
   optional string pixId = 1;
   optional string idCliente = 2;
   string nome = 3;

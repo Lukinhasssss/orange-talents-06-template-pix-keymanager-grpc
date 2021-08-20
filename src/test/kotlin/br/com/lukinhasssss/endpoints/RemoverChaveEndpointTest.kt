@@ -64,24 +64,6 @@ internal class RemoverChaveEndpointTest {
     }
 
     @Test
-    internal fun `nao deve remover uma chave pix e deve retornar PERMISSION_DENIED quando o cliente tentar excluir uma chave que nao e dele`() {
-        val request = RemoverChaveRequest.newBuilder()
-            .setPixId(chavePix.pixId)
-            .setIdCliente(UUID.randomUUID().toString())
-            .build()
-
-        val exception = assertThrows<StatusRuntimeException> {
-            grpcClient.removerChave(request)
-        }
-
-        with(exception) {
-            assertEquals("Chave Pix não pertence ao cliente!", status.description)
-            assertEquals(Status.PERMISSION_DENIED.code, status.code)
-            assertTrue(pixRepository.findAll().isNotEmpty())
-        }
-    }
-
-    @Test
     internal fun `nao deve remover uma chave pix e deve retornar PERMISSION_DENIED quando a requisicao para o BCB retornar status 403`() {
         val request = RemoverChaveRequest.newBuilder()
             .setPixId(chavePix.pixId)
